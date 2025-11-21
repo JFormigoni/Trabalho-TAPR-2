@@ -3,42 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Commerce</title>
+    <title>E-Commerce - Microserviços</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>🛒 E-Commerce</h1>
-        
-        <!-- Login -->
-        <div id="login-section">
-            <h2>Login</h2>
-            <input type="text" id="username" placeholder="Usuário">
-            <input type="password" id="password" placeholder="Senha">
-            <button onclick="login()">Entrar</button>
-            <button onclick="register()">Registrar</button>
-        </div>
-
-        <!-- Main App -->
-        <div id="app-section" style="display: none;">
-            <div class="header">
-                <span id="user-name"></span>
-                <button onclick="logout()">Sair</button>
+    <header>
+        <div class="container">
+            <h1>🛒 E-Commerce Microserviços</h1>
+            <div id="user-info">
+                <span id="username"></span>
+                <button id="logout-btn" style="display: none;">Sair</button>
             </div>
-
-            <h2>Produtos</h2>
-            <div id="products"></div>
-
-            <h2>Carrinho</h2>
-            <div id="cart"></div>
-            <button onclick="checkout()">Finalizar Pedido</button>
-
-            <h2>Pedidos</h2>
-            <div id="orders"></div>
         </div>
+    </header>
 
-        <div id="message"></div>
-    </div>
+    <main class="container">
+        <!-- Login Section -->
+        <section id="login-section" class="card">
+            <h2>Login</h2>
+            <form id="login-form">
+                <input type="text" id="login-username" placeholder="Usuário" required>
+                <input type="password" id="login-password" placeholder="Senha" required>
+                <button type="submit">Entrar</button>
+            </form>
+            <p>Não tem conta? <a href="#" id="show-register">Registrar</a></p>
+        </section>
+
+        <!-- Register Section -->
+        <section id="register-section" class="card" style="display: none;">
+            <h2>Registrar</h2>
+            <form id="register-form">
+                <input type="text" id="register-username" placeholder="Usuário" required>
+                <input type="password" id="register-password" placeholder="Senha" required>
+                <input type="email" id="register-email" placeholder="Email" required>
+                <button type="submit">Registrar</button>
+            </form>
+            <p>Já tem conta? <a href="#" id="show-login">Fazer login</a></p>
+        </section>
+
+        <!-- Products Section -->
+        <section id="products-section" style="display: none;">
+            <h2>Produtos</h2>
+            <div id="products-grid" class="products-grid"></div>
+        </section>
+
+        <!-- Cart Section -->
+        <section id="cart-section" style="display: none;">
+            <h2>Carrinho</h2>
+            <div id="cart-items"></div>
+            <div id="cart-total"></div>
+            <button id="checkout-btn" class="btn-primary">Finalizar Pedido</button>
+        </section>
+
+        <!-- Orders Section -->
+        <section id="orders-section" style="display: none;">
+            <h2>Meus Pedidos</h2>
+            <div id="orders-list"></div>
+        </section>
+    </main>
+
+    <div id="message" class="message"></div>
 
     <script src="app.js"></script>
 </body>

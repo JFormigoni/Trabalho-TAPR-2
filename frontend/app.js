@@ -1,148 +1,289 @@
-const API = 'http://localhost:8080';
+const API_BASE = 'http://localhost:8080';
 let token = localStorage.getItem('token');
+let currentUser = localStorage.getItem('username');
 
-if (token) showApp();
+// Elements
+const loginSection = document.getElementById('login-section');
+const registerSection = document.getElementById('register-section');
+const productsSection = document.getElementById('products-section');
+const cartSection = document.getElementById('cart-section');
+const ordersSection = document.getElementById('orders-section');
+const usernameDisplay = document.getElementById('username');
+const logoutBtn = document.getElementById('logout-btn');
 
-async function login() {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    if (token) {
+        showMainApp();
+    }
     
-    const res = await fetch(`${API}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+    setupEventListeners();
+});
+
+function setupEventListeners() {
+    document.getElementById('login-form').addEventListener('submit', handleLogin);
+    document.getElementById('register-form').addEventListener('submit', handleRegister);
+    document.getElementById('show-register').addEventListener('click', (e) => {
+        e.preventDefault();
+        loginSection.style.display = 'none';
+        registerSection.style.display = 'block';
     });
+    document.getElementById('show-login').addEventListener('click', (e) => {
+        e.preventDefault();
+        registerSection.style.display = 'none';
+        loginSection.style.display = 'block';
+    });
+    logoutBtn.addEventListener('click', handleLogout);
+    document.getElementById('checkout-btn').addEventListener('click', handleCheckout);
+}
+
+async function handleLogin(e) {
+    e.preventDefault();
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
     
-    if (res.ok) {
-        const data = await res.json();
-        token = data.token;
-        localStorage.setItem('token', token);
-        localStorage.setItem('username', username);
-        showApp();
-    } else {
-        msg('Erro no login', 'error');
+    try {
+        const response = await fetch(`${API_BASE}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            token = data.token;
+            currentUser = username;
+            localStorage.setItem('token', token);
+            localStorage.setItem('username', username);
+            showMessage('Login realizado com sucesso!', 'success');
+            showMainApp();
+        } else {
+            showMessage('Erro no login. Verifique suas credenciais.', 'error');
+        }
+    } catch (error) {
+        showMessage('Erro ao conectar com o servidor.', 'error');
     }
 }
 
-async function register() {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+async function handleRegister(e) {
+    e.preventDefault();
+    const username = document.getElementById('register-username').value;
+    const password = document.getElementById('register-password').value;
+    const email = document.getElementById('register-email').value;
     
-    const res = await fetch(`${API}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, email: username + '@email.com' })
-    });
-    
-    if (res.ok) {
-        msg('Registrado! Faça login', 'success');
-    } else {
-        msg('Erro no registro', 'error');
+    try {
+        const response = await fetch(`${API_BASE}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, email })
+        });
+        
+        if (response.ok) {
+            showMessage('Registro realizado! Faça login.', 'success');
+            registerSection.style.display = 'none';
+            loginSection.style.display = 'block';
+        } else {
+            showMessage('Erro no registro. Tente outro usuário.', 'error');
+        }
+    } catch (error) {
+        showMessage('Erro ao conectar com o servidor.', 'error');
     }
 }
 
-function logout() {
+function handleLogout() {
     token = null;
-    localStorage.clear();
-    location.reload();
+    currentUser = null;
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    showLoginScreen();
 }
 
-function showApp() {
-    document.getElementById('login-section').style.display = 'none';
-    document.getElementById('app-section').style.display = 'block';
-    document.getElementById('user-name').textContent = localStorage.getItem('username');
+function showLoginScreen() {
+    loginSection.style.display = 'block';
+    registerSection.style.display = 'none';
+    productsSection.style.display = 'none';
+    cartSection.style.display = 'none';
+    ordersSection.style.display = 'none';
+    usernameDisplay.textContent = '';
+    logoutBtn.style.display = 'none';
+}
+
+function showMainApp() {
+    loginSection.style.display = 'none';
+    registerSection.style.display = 'none';
+    productsSection.style.display = 'block';
+    cartSection.style.display = 'block';
+    ordersSection.style.display = 'block';
+    usernameDisplay.textContent = `Olá, ${currentUser}!`;
+    logoutBtn.style.display = 'block';
+    
     loadProducts();
     loadCart();
     loadOrders();
 }
 
 async function loadProducts() {
-    const res = await fetch(`${API}/products`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const products = await res.json();
-    document.getElementById('products').innerHTML = products.map(p => `
-        <div class="product">
-            <strong>${p.name}</strong> - R$ ${p.price.toFixed(2)} (Estoque: ${p.stock})
-            <button onclick="addToCart(${p.id})">Adicionar</button>
+    try {
+        const response = await fetch(`${API_BASE}/products`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const products = await response.json();
+            displayProducts(products);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar produtos:', error);
+    }
+}
+
+function displayProducts(products) {
+    const grid = document.getElementById('products-grid');
+    grid.innerHTML = products.map(product => `
+        <div class="product-card">
+            <h3>${product.name}</h3>
+            <p>${product.description}</p>
+            <div class="product-price">R$ ${product.price.toFixed(2)}</div>
+            <p>Estoque: ${product.stock}</p>
+            <button onclick="addToCart(${product.id})">Adicionar ao Carrinho</button>
         </div>
     `).join('');
 }
 
 async function addToCart(productId) {
-    await fetch(`${API}/cart/items`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ productId, quantity: 1 })
-    });
-    msg('Adicionado ao carrinho', 'success');
-    loadCart();
+    try {
+        const response = await fetch(`${API_BASE}/cart/items`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ productId, quantity: 1 })
+        });
+        
+        if (response.ok) {
+            showMessage('Produto adicionado ao carrinho!', 'success');
+            loadCart();
+        }
+    } catch (error) {
+        showMessage('Erro ao adicionar produto.', 'error');
+    }
 }
 
 async function loadCart() {
-    const res = await fetch(`${API}/cart`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const cart = await res.json();
+    try {
+        const response = await fetch(`${API_BASE}/cart`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const cart = await response.json();
+            displayCart(cart);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar carrinho:', error);
+    }
+}
+
+function displayCart(cart) {
+    const cartItems = document.getElementById('cart-items');
+    const cartTotal = document.getElementById('cart-total');
     
     if (!cart.items || cart.items.length === 0) {
-        document.getElementById('cart').innerHTML = '<p>Carrinho vazio</p>';
+        cartItems.innerHTML = '<p>Carrinho vazio</p>';
+        cartTotal.innerHTML = '';
         return;
     }
     
-    document.getElementById('cart').innerHTML = cart.items.map(i => `
+    cartItems.innerHTML = cart.items.map(item => `
         <div class="cart-item">
-            ${i.productName} - ${i.quantity}x R$ ${i.price.toFixed(2)} = R$ ${(i.quantity * i.price).toFixed(2)}
-            <button onclick="removeFromCart(${i.id})">Remover</button>
+            <div>
+                <strong>${item.productName}</strong><br>
+                Quantidade: ${item.quantity} x R$ ${item.price.toFixed(2)}
+            </div>
+            <div>
+                <strong>R$ ${(item.quantity * item.price).toFixed(2)}</strong>
+                <button onclick="removeFromCart(${item.id})">Remover</button>
+            </div>
         </div>
-    `).join('') + `<p><strong>Total: R$ ${cart.totalAmount.toFixed(2)}</strong></p>`;
+    `).join('');
+    
+    cartTotal.innerHTML = `Total: R$ ${cart.totalAmount.toFixed(2)}`;
 }
 
 async function removeFromCart(itemId) {
-    await fetch(`${API}/cart/items/${itemId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
-    loadCart();
+    try {
+        const response = await fetch(`${API_BASE}/cart/items/${itemId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            showMessage('Item removido do carrinho!', 'success');
+            loadCart();
+        }
+    } catch (error) {
+        showMessage('Erro ao remover item.', 'error');
+    }
 }
 
-async function checkout() {
-    const res = await fetch(`${API}/orders`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
-    
-    if (res.ok) {
-        msg('Pedido realizado!', 'success');
-        loadCart();
-        loadOrders();
+async function handleCheckout() {
+    try {
+        const response = await fetch(`${API_BASE}/orders`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            showMessage('Pedido realizado com sucesso!', 'success');
+            loadCart();
+            loadOrders();
+        } else {
+            showMessage('Erro ao finalizar pedido.', 'error');
+        }
+    } catch (error) {
+        showMessage('Erro ao processar pedido.', 'error');
     }
 }
 
 async function loadOrders() {
-    const res = await fetch(`${API}/orders`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const orders = await res.json();
+    try {
+        const response = await fetch(`${API_BASE}/orders`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const orders = await response.json();
+            displayOrders(orders);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar pedidos:', error);
+    }
+}
+
+function displayOrders(orders) {
+    const ordersList = document.getElementById('orders-list');
     
     if (!orders || orders.length === 0) {
-        document.getElementById('orders').innerHTML = '<p>Nenhum pedido</p>';
+        ordersList.innerHTML = '<p>Nenhum pedido encontrado</p>';
         return;
     }
     
-    document.getElementById('orders').innerHTML = orders.map(o => `
-        <div class="order">
-            Pedido #${o.id} - ${o.status} - R$ ${o.totalAmount.toFixed(2)}
+    ordersList.innerHTML = orders.map(order => `
+        <div class="order-card">
+            <h3>Pedido #${order.id}</h3>
+            <p>Data: ${new Date(order.orderDate).toLocaleDateString('pt-BR')}</p>
+            <p>Status: <span class="order-status status-${order.status}">${order.status}</span></p>
+            <p><strong>Total: R$ ${order.totalAmount.toFixed(2)}</strong></p>
         </div>
     `).join('');
 }
 
-function msg(text, type) {
-    const el = document.getElementById('message');
-    el.textContent = text;
-    el.className = type + ' show';
-    setTimeout(() => el.className = '', 3000);
+function showMessage(message, type) {
+    const messageEl = document.getElementById('message');
+    messageEl.textContent = message;
+    messageEl.className = `message ${type}`;
+    setTimeout(() => {
+        messageEl.className = 'message';
+    }, 3000);
 }
