@@ -24,5 +24,5 @@ Frontend básico para demonstração do sistema de microserviços.
 
 ## Configuração
 
-O frontend está configurado para se conectar ao gateway em `http://localhost:8080`.
+O frontend está configurado para se conectar ao gateway em `http://localhost:8083`.
 Se necessário, altere a constante `API_BASE` no arquivo `app.js`.

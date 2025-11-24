@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:8080';
+const API_BASE = 'http://localhost:8083';
 let token = localStorage.getItem('token');
 let currentUser = localStorage.getItem('username');
 
@@ -39,8 +39,18 @@ function setupEventListeners() {
 
 async function handleLogin(e) {
     e.preventDefault();
-    const username = document.getElementById('login-username').value;
+    const username = document.getElementById('login-username').value.trim();
     const password = document.getElementById('login-password').value;
+    
+    if (!username || !password) {
+        showMessage('Preencha todos os campos!', 'error');
+        return;
+    }
+    
+    if (username.length < 3) {
+        showMessage('Usuário deve ter pelo menos 3 caracteres!', 'error');
+        return;
+    }
     
     try {
         const response = await fetch(`${API_BASE}/auth/login`, {
@@ -67,9 +77,29 @@ async function handleLogin(e) {
 
 async function handleRegister(e) {
     e.preventDefault();
-    const username = document.getElementById('register-username').value;
+    const username = document.getElementById('register-username').value.trim();
     const password = document.getElementById('register-password').value;
-    const email = document.getElementById('register-email').value;
+    const email = document.getElementById('register-email').value.trim();
+    
+    if (!username || !password || !email) {
+        showMessage('Preencha todos os campos!', 'error');
+        return;
+    }
+    
+    if (username.length < 3) {
+        showMessage('Usuário deve ter pelo menos 3 caracteres!', 'error');
+        return;
+    }
+    
+    if (password.length < 4) {
+        showMessage('Senha deve ter pelo menos 4 caracteres!', 'error');
+        return;
+    }
+    
+    if (!email.includes('@')) {
+        showMessage('Email inválido!', 'error');
+        return;
+    }
     
     try {
         const response = await fetch(`${API_BASE}/auth/register`, {
@@ -82,6 +112,7 @@ async function handleRegister(e) {
             showMessage('Registro realizado! Faça login.', 'success');
             registerSection.style.display = 'none';
             loginSection.style.display = 'block';
+            document.getElementById('register-form').reset();
         } else {
             showMessage('Erro no registro. Tente outro usuário.', 'error');
         }
@@ -123,6 +154,9 @@ function showMainApp() {
 }
 
 async function loadProducts() {
+    const grid = document.getElementById('products-grid');
+    grid.innerHTML = '<div class="loading">Carregando produtos</div>';
+    
     try {
         const response = await fetch(`${API_BASE}/products`, {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -134,6 +168,7 @@ async function loadProducts() {
         }
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);
+        grid.innerHTML = '<p>Erro ao carregar produtos</p>';
     }
 }
 
@@ -188,12 +223,20 @@ async function loadCart() {
 function displayCart(cart) {
     const cartItems = document.getElementById('cart-items');
     const cartTotal = document.getElementById('cart-total');
+    const cartCount = document.getElementById('cart-count');
+    const checkoutBtn = document.getElementById('checkout-btn');
     
     if (!cart.items || cart.items.length === 0) {
-        cartItems.innerHTML = '<p>Carrinho vazio</p>';
+        cartItems.innerHTML = '<p style="text-align: center; color: #999; padding: 2rem;">🛒 Seu carrinho está vazio</p>';
         cartTotal.innerHTML = '';
+        cartCount.textContent = '';
+        checkoutBtn.style.display = 'none';
         return;
     }
+    
+    const totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+    cartCount.textContent = `(${totalItems} ${totalItems === 1 ? 'item' : 'itens'})`;
+    checkoutBtn.style.display = 'block';
     
     cartItems.innerHTML = cart.items.map(item => `
         <div class="cart-item">
