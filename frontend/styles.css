@@ -211,3 +211,11 @@ footer p {
     color: #666;
     font-size: 0.85rem;
 }
+
+.card p {
+    line-height: 1.6;
+}
+
+.card p strong {
+    color: #667eea;
+}

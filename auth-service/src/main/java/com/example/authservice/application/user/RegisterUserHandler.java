@@ -7,7 +7,7 @@ import com.example.authservice.domain.user.vo.Email;
 import com.example.authservice.domain.user.vo.RoleType;
 import com.example.authservice.interfaces.rest.dto.UserResponse;
 import com.example.authservice.messaging.events.UserCreatedEvent;
-import com.example.authservice.messaging.events.UserCreatedPublisher;
+import com.example.authservice.messaging.UserCreatedPublisher;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

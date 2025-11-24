@@ -9,38 +9,60 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('register-btn').addEventListener('click', handleRegister);
     document.getElementById('logout-btn').addEventListener('click', handleLogout);
     document.getElementById('checkout-btn').addEventListener('click', handleCheckout);
+    
+    // Adicionar dica visual
+    const usernameField = document.getElementById('username');
+    usernameField.addEventListener('focus', () => {
+        showMessage('Campo "Nome" é necessário apenas para REGISTRO', 'success');
+    });
 });
 
 async function handleLogin(e) {
     e.preventDefault();
-    const username = document.getElementById('username').value.trim();
+    const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
     
-    if (!username || !password) {
-        showMessage('Preencha usuário e senha!', 'error');
+    console.log('Tentando login com:', email);
+    
+    if (!email || !password) {
+        showMessage('Preencha email e senha para fazer login!', 'error');
         return;
     }
     
+    if (!email.includes('@')) {
+        showMessage('Use seu email para fazer login!', 'error');
+        return;
+    }
+    
+    const url = `${API_BASE}/auth-service/auth/login/password`;
+    console.log('URL:', url);
+    
     try {
-        const response = await fetch(`${API_BASE}/auth/login`, {
+        const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ email, password })
         });
+        
+        console.log('Response status:', response.status);
         
         if (response.ok) {
             const data = await response.json();
-            token = data.token;
-            currentUser = username;
+            console.log('Login bem-sucedido:', data);
+            token = data.accessToken || data.token;
+            currentUser = email;
             localStorage.setItem('token', token);
-            localStorage.setItem('username', username);
+            localStorage.setItem('username', email);
             showMessage('Login realizado!', 'success');
             showMainApp();
         } else {
-            showMessage('Usuário ou senha incorretos', 'error');
+            const errorText = await response.text();
+            console.error('Erro na resposta:', errorText);
+            showMessage('Email ou senha incorretos', 'error');
         }
     } catch (error) {
-        showMessage('Erro ao conectar com o servidor', 'error');
+        console.error('Erro completo:', error);
+        showMessage('Erro ao conectar com o servidor. Verifique se os serviços estão rodando.', 'error');
     }
 }
 
@@ -49,25 +71,40 @@ async function handleRegister() {
     const password = document.getElementById('password').value;
     const email = document.getElementById('email').value.trim();
     
+    console.log('Tentando registrar:', { username, email });
+    
     if (!username || !password || !email) {
-        showMessage('Preencha todos os campos para registrar!', 'error');
+        showMessage('Para registrar, preencha TODOS os campos: nome, email e senha!', 'error');
+        return;
+    }
+    
+    if (password.length < 8) {
+        showMessage('Senha deve ter no mínimo 8 caracteres!', 'error');
+        return;
+    }
+    
+    if (!email.includes('@')) {
+        showMessage('Email inválido!', 'error');
         return;
     }
     
     try {
-        const response = await fetch(`${API_BASE}/auth/register`, {
+        const response = await fetch(`${API_BASE}/auth-service/users`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password, email })
+            body: JSON.stringify({ name: username, password, email })
         });
         
         if (response.ok) {
-            showMessage('Registrado! Agora faça login', 'success');
-            document.getElementById('email').value = '';
+            showMessage('Registrado! Agora faça login (apenas email e senha)', 'success');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
         } else {
-            showMessage('Erro no registro', 'error');
+            const errorData = await response.json();
+            showMessage(errorData.message || 'Erro no registro', 'error');
         }
     } catch (error) {
+        console.error('Erro:', error);
         showMessage('Erro ao conectar com o servidor', 'error');
     }
 }

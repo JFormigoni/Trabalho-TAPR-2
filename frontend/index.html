@@ -22,14 +22,18 @@
         <section id="login-section" class="card">
             <h2>Acesso</h2>
             <form id="auth-form">
-                <input type="text" id="username" placeholder="Usuário" required>
-                <input type="password" id="password" placeholder="Senha" required>
-                <input type="email" id="email" placeholder="Email (apenas para registro)">
+                <input type="text" id="username" placeholder="Nome (apenas para registro)">
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="password" id="password" placeholder="Senha (mín. 8 caracteres)" required minlength="8">
                 <div style="display: flex; gap: 0.5rem;">
                     <button type="submit">Entrar</button>
                     <button type="button" id="register-btn">Registrar</button>
                 </div>
             </form>
+            <p style="font-size: 0.85rem; color: #666; margin-top: 1rem;">
+                <strong>Login:</strong> Preencha apenas email e senha<br>
+                <strong>Registro:</strong> Preencha todos os 3 campos (nome, email, senha)
+            </p>
         </section>
 
         <!-- Products Section -->

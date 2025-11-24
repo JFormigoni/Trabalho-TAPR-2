@@ -1,165 +1,244 @@
-# E-commerce de Pneus - Microserviços
+# E-Commerce de Pneus - Microserviços
 
-Sistema de e-commerce de pneus desenvolvido com arquitetura de microserviços usando Spring Boot e Spring Cloud.
+Sistema de e-commerce para venda de pneus desenvolvido com arquitetura de microserviços.
 
-> ⚡ **[Início Rápido - 5 Minutos](INICIO_RAPIDO.md)** | 📚 **[Índice Completo](INDICE.md)** | 🎯 **[Apresentação](APRESENTACAO.md)**
+## Membros da Equipe
 
-## Arquitetura
+- Rafael Feliz
+- Lucas Arins
+- Vinicius Aron
+- João Eduardo 
 
-- **Service Discovery (Eureka)**: Porta 8080
-- **Gateway Service**: Porta 8083
-- **Auth Service**: Porta 8084
-- **Product Service (Pneus)**: Porta 8085
-- **Order Service**: Porta 8086
-- **Cart Service**: Porta 8087
-- **RabbitMQ**: Portas 5672 (AMQP) e 15672 (Management)
+## Aplicação
 
-## Executar o Projeto
+Site de e-commerce para venda de pneus com arquitetura de microserviços.
 
-```bash
-docker-compose up --build
-```
+## Serviços Específicos
 
-## Endpoints
+### Catálogo de Produtos
+Serviço para gerenciar o cadastro de pneus (marcas, modelos, medidas, preços, estoque).
 
-### Product Service - Pneus
+### Carrinho de Compras
+Serviço para que os usuários possam adicionar e remover produtos antes de finalizar a compra.
 
-**Base URL**: `http://localhost:8085/api/tires`
+### Gestão de Pedidos
+Serviço para processar os pedidos, desde o pagamento até a entrega.
 
-- `GET /api/tires` - Listar todos os pneus
-- `GET /api/tires/{id}` - Buscar pneu por ID
-- `GET /api/tires/brand/{brand}` - Buscar pneus por marca
-- `GET /api/tires/size/{size}` - Buscar pneus por tamanho (ex: 205/55R16)
-- `GET /api/tires/search?width={width}&profile={profile}&diameter={diameter}` - Buscar por dimensões
-- `GET /api/tires/season/{season}` - Buscar por temporada (ALL_SEASON, SUMMER, WINTER)
-- `POST /api/tires` - Criar novo pneu
-- `PUT /api/tires/{id}` - Atualizar pneu
-- `DELETE /api/tires/{id}` - Deletar pneu (soft delete)
-- `PATCH /api/tires/{id}/stock?quantity={quantity}` - Atualizar estoque
+## Serviços Obrigatórios
 
-**Exemplo de Pneu**:
-```json
-{
-  "brand": "Michelin",
-  "model": "Primacy 4",
-  "size": "205/55R16",
-  "width": 205,
-  "profile": 55,
-  "diameter": 16,
-  "loadIndex": "91",
-  "speedRating": "V",
-  "season": "ALL_SEASON",
-  "price": 450.00,
-  "stock": 50,
-  "description": "Pneu de alta performance",
-  "imageUrl": "https://example.com/image.jpg"
-}
-```
+### Autenticação
+Para login de clientes e administradores.
 
-### Cart Service - Carrinho
+### Service Discovery (Eureka)
+Para que os microserviços se encontrem na rede.
 
-**Base URL**: `http://localhost:8087/api/cart`
-
-- `GET /api/cart/{userId}` - Obter carrinho do usuário
-- `POST /api/cart/{userId}/items` - Adicionar item ao carrinho
-- `PUT /api/cart/{userId}/items/{itemId}?quantity={quantity}` - Atualizar quantidade
-- `DELETE /api/cart/{userId}/items/{itemId}` - Remover item
-- `DELETE /api/cart/{userId}` - Limpar carrinho
-
-**Exemplo de Item do Carrinho**:
-```json
-{
-  "tireId": 1,
-  "tireBrand": "Michelin",
-  "tireModel": "Primacy 4",
-  "tireSize": "205/55R16",
-  "price": 450.00,
-  "quantity": 4
-}
-```
-
-### Order Service - Pedidos
-
-**Base URL**: `http://localhost:8086/api/orders`
-
-- `GET /api/orders` - Listar todos os pedidos
-- `GET /api/orders/{id}` - Buscar pedido por ID
-- `GET /api/orders/user/{userId}` - Buscar pedidos do usuário
-- `GET /api/orders/status/{status}` - Buscar pedidos por status
-- `POST /api/orders` - Criar novo pedido
-- `PATCH /api/orders/{id}/status?status={status}` - Atualizar status
-- `DELETE /api/orders/{id}` - Cancelar pedido
-
-**Status do Pedido**: PENDING, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED
-
-**Exemplo de Pedido**:
-```json
-{
-  "userId": 1,
-  "items": [
-    {
-      "tireId": 1,
-      "tireBrand": "Michelin",
-      "tireModel": "Primacy 4",
-      "tireSize": "205/55R16",
-      "price": 450.00,
-      "quantity": 4
-    }
-  ],
-  "deliveryAddress": "Rua Exemplo, 123",
-  "deliveryCity": "São Paulo",
-  "deliveryState": "SP",
-  "deliveryZipCode": "01234-567"
-}
-```
-
-### Auth Service
-
-**Base URL**: `http://localhost:8084`
-
-Endpoints de autenticação e gerenciamento de usuários (já implementados).
+### API Gateway
+Para centralizar e proteger o acesso a todos os serviços.
 
 ## Tecnologias
 
 - Java 17
-- Spring Boot 3.5.x
-- Spring Cloud 2025.0.0
-- Spring Data JPA
-- H2 Database (em memória)
-- Lombok
-- Netflix Eureka
-- Spring Cloud Gateway
-- RabbitMQ
+- Spring Boot 3.5
+- Spring Cloud (Eureka, Gateway)
+- H2 Database
 - Docker & Docker Compose
 
-## Dados de Exemplo
+## Como Executar
 
-O Product Service é inicializado com 8 pneus de exemplo de diferentes marcas (Michelin, Pirelli, Goodyear, Continental, Bridgestone, Yokohama).
+### Com Docker Compose
 
-## 📚 Documentação Completa
+**Local:**
+```bash
+docker-compose up --build
+```
 
-- **[COMO_EXECUTAR.md](COMO_EXECUTAR.md)** - Guia completo de como executar o projeto
-- **[COMANDOS_RAPIDOS.md](COMANDOS_RAPIDOS.md)** - Comandos úteis para testar rapidamente
-- **[API_EXAMPLES.md](API_EXAMPLES.md)** - Exemplos detalhados de requisições
-- **[ESTRUTURA_PROJETO.md](ESTRUTURA_PROJETO.md)** - Arquitetura e estrutura dos serviços
-- **[RESUMO_IMPLEMENTACAO.md](RESUMO_IMPLEMENTACAO.md)** - Resumo completo do que foi implementado
-- **[TESTE_LOCAL.md](TESTE_LOCAL.md)** - Como testar sem Docker
-
-## 🚀 Início Rápido
-
-### Com Docker:
+**No GitHub Codespaces:**
 ```bash
 docker compose up --build
 ```
 
-### Sem Docker:
-```powershell
-.\start-services.ps1
+Aguarde 2-3 minutos para todos os serviços iniciarem.
+
+### Sem Docker
+
+Execute cada serviço em um terminal separado:
+
+```bash
+# Service Discovery
+cd service-discovery
+./mvnw spring-boot:run
+
+# Gateway
+cd gateway-service
+./mvnw spring-boot:run
+
+# Auth Service
+cd auth-service
+./mvnw spring-boot:run
+
+# Product Service
+cd product-service
+./mvnw spring-boot:run
+
+# Cart Service
+cd cart-service
+./mvnw spring-boot:run
+
+# Order Service
+cd order-service
+./mvnw spring-boot:run
 ```
 
-### Testar:
-```powershell
-.\test-endpoints.ps1
+## Portas dos Serviços
+
+- Service Discovery (Eureka): 8080
+- Gateway: 8083
+- Auth Service: 8084
+- Product Service: 8085
+- Order Service: 8086
+- Cart Service: 8087
+
+## Acessar
+
+- Eureka Dashboard: http://localhost:8080
+- API Gateway: http://localhost:8083
+- Frontend: http://localhost:3000 (veja instruções abaixo)
+
+## Como Usar o Frontend
+
+### 1. Iniciar Servidor HTTP para o Frontend
+
+O frontend precisa ser servido via HTTP (não pode abrir o arquivo diretamente por causa do CORS).
+
+**Local - Com Python:**
+```bash
+cd frontend
+python -m http.server 3000
 ```
 
-Ou acesse: http://localhost:8080 (Eureka Dashboard)
+**Local - Com Node.js:**
+```bash
+cd frontend
+npx http-server -p 3000
+```
+
+**No Codespaces:**
+```bash
+cd frontend
+python3 -m http.server 3000
+```
+
+### 2. Acessar o Frontend
+
+**Local:** http://localhost:3000
+
+**No Codespaces:** 
+- O Codespaces abrirá automaticamente uma aba com a porta 3000
+- Ou clique na aba "PORTS" e abra a porta 3000
+
+### 3. Testar o Sistema
+
+#### Registrar Usuário
+1. Preencha os 3 campos:
+   - Nome: teste
+   - Email: teste@email.com
+   - Senha: senha12345 (mínimo 8 caracteres)
+2. Clique em "Registrar"
+
+#### Fazer Login
+1. Preencha apenas 2 campos:
+   - Email: teste@email.com
+   - Senha: senha12345
+   - (deixe o campo Nome vazio)
+2. Clique em "Entrar"
+
+#### Usar o Sistema
+- Veja os produtos listados
+- Adicione produtos ao carrinho
+- Veja o carrinho atualizado
+- Clique em "Finalizar Pedido"
+- Veja seus pedidos na lista
+
+## Endpoints Principais
+
+### Autenticação
+- POST `/auth-service/users` - Registrar usuário
+- POST `/auth-service/auth/login/password` - Login
+
+### Produtos
+- GET `/product-service/products` - Listar produtos
+- GET `/product-service/products/{id}` - Buscar produto
+
+### Carrinho
+- GET `/cart-service/cart` - Ver carrinho
+- POST `/cart-service/cart/items` - Adicionar item
+- DELETE `/cart-service/cart/items/{id}` - Remover item
+
+### Pedidos
+- GET `/order-service/orders` - Listar pedidos
+- POST `/order-service/orders` - Criar pedido
+
+## Arquitetura
+
+```
+Frontend → Gateway → Serviços (Auth, Product, Cart, Order)
+                  ↓
+           Service Discovery (Eureka)
+```
+
+## Testando no GitHub Codespaces
+
+### Passo 1: Iniciar Backend com Docker Compose
+```bash
+docker compose up --build
+```
+
+Aguarde 2-3 minutos. Você verá logs de todos os serviços.
+
+### Passo 2: Abrir Novo Terminal
+Clique no `+` no terminal para abrir um novo terminal.
+
+### Passo 3: Iniciar Frontend
+No novo terminal:
+```bash
+cd frontend
+python3 -m http.server 3000
+```
+
+### Passo 4: Acessar as Portas
+O Codespaces detectará automaticamente as portas. Clique na aba "PORTS" (ao lado de TERMINAL) e você verá:
+- Porta 3000 (Frontend) - Clique no ícone de globo para abrir
+- Porta 8080 (Eureka)
+- Porta 8083 (Gateway)
+
+### Passo 5: Usar o Frontend
+Abra a porta 3000 e siga as instruções de teste abaixo.
+
+## Troubleshooting
+
+### Erro de CORS
+Se aparecer erro de CORS no navegador:
+- ✅ Use http://localhost:3000 (com servidor HTTP)
+- ❌ NÃO abra index.html diretamente (file://)
+
+### "Python não encontrado"
+Instale Python: https://www.python.org/downloads/
+
+Ou use Node.js: `npx http-server -p 3000`
+
+### Serviços não iniciam
+1. Verifique se as portas 8080-8087 estão livres
+2. Aguarde 1-2 minutos após iniciar os serviços
+3. Verifique o Eureka Dashboard (http://localhost:8080)
+
+### Login não funciona
+- Use o EMAIL para fazer login (não o nome)
+- Senha deve ter 8+ caracteres
+- Registre o usuário primeiro
+
+## Observações
+
+- Banco de dados H2 em memória (dados resetam ao reiniciar)
+- JWT para autenticação (expira em 15 minutos)
+- CORS configurado para desenvolvimento
+- RabbitMQ publica eventos de criação de usuário
