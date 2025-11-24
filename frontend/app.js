@@ -1,4 +1,11 @@
-const API_BASE = 'http://localhost:8083';
+// Detectar se está no Codespaces ou local
+const isCodespaces = window.location.hostname.includes('github.dev') || window.location.hostname.includes('githubpreview.dev');
+const API_BASE = isCodespaces 
+    ? window.location.origin.replace('-3000', '-8083')
+    : 'http://localhost:8083';
+
+console.log('API Base URL:', API_BASE);
+
 let token = localStorage.getItem('token');
 let currentUser = localStorage.getItem('username');
 
