@@ -20,25 +20,16 @@
     <main class="container">
         <!-- Login Section -->
         <section id="login-section" class="card">
-            <h2>Login</h2>
-            <form id="login-form">
-                <input type="text" id="login-username" placeholder="Usuário" required>
-                <input type="password" id="login-password" placeholder="Senha" required>
-                <button type="submit">Entrar</button>
+            <h2>Acesso</h2>
+            <form id="auth-form">
+                <input type="text" id="username" placeholder="Usuário" required>
+                <input type="password" id="password" placeholder="Senha" required>
+                <input type="email" id="email" placeholder="Email (apenas para registro)">
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="submit">Entrar</button>
+                    <button type="button" id="register-btn">Registrar</button>
+                </div>
             </form>
-            <p>Não tem conta? <a href="#" id="show-register">Registrar</a></p>
-        </section>
-
-        <!-- Register Section -->
-        <section id="register-section" class="card" style="display: none;">
-            <h2>Registrar</h2>
-            <form id="register-form">
-                <input type="text" id="register-username" placeholder="Usuário" required>
-                <input type="password" id="register-password" placeholder="Senha" required>
-                <input type="email" id="register-email" placeholder="Email" required>
-                <button type="submit">Registrar</button>
-            </form>
-            <p>Já tem conta? <a href="#" id="show-login">Fazer login</a></p>
         </section>
 
         <!-- Products Section -->
@@ -49,15 +40,14 @@
 
         <!-- Cart Section -->
         <section id="cart-section" style="display: none;">
-            <h2>Carrinho <span id="cart-count" style="color: #667eea;"></span></h2>
+            <h2>Carrinho</h2>
             <div id="cart-items"></div>
-            <div id="cart-total"></div>
-            <button id="checkout-btn" class="btn-primary">Finalizar Pedido</button>
+            <button id="checkout-btn" class="btn-primary" style="display: none;">Finalizar Pedido</button>
         </section>
 
         <!-- Orders Section -->
         <section id="orders-section" style="display: none;">
-            <h2>Meus Pedidos</h2>
+            <h2>Pedidos</h2>
             <div id="orders-list"></div>
         </section>
     </main>
