@@ -7,7 +7,7 @@ Sistema de e-commerce para venda de pneus desenvolvido com arquitetura de micros
 - Rafael Feliz
 - Lucas Arins
 - Vinicius Aron
-- João Eduardo 
+- João Eduardo Formigoni
 
 ## Aplicação
 
