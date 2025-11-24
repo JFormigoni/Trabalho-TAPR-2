@@ -1,9 +1,22 @@
-// Detectar se está no Codespaces ou local
-const isCodespaces = window.location.hostname.includes('github.dev') || window.location.hostname.includes('githubpreview.dev');
-const API_BASE = isCodespaces 
-    ? window.location.origin.replace('-3000', '-8083')
-    : 'http://localhost:8083';
+// Detectar ambiente
+const hostname = window.location.hostname;
+const isCodespaces = hostname.includes('github.dev') || hostname.includes('githubpreview.dev') || hostname.includes('app.github.dev');
+const isLocalServer = hostname === 'localhost' || hostname === '127.0.0.1';
 
+let API_BASE;
+if (isCodespaces) {
+    // No Codespaces, substituir porta 3000 por 8083
+    API_BASE = window.location.origin.replace('-3000', '-8083');
+} else if (isLocalServer) {
+    // Local com servidor HTTP
+    API_BASE = 'http://localhost:8083';
+} else {
+    // Fallback
+    API_BASE = 'http://localhost:8083';
+}
+
+console.log('Hostname:', hostname);
+console.log('Is Codespaces:', isCodespaces);
 console.log('API Base URL:', API_BASE);
 
 let token = localStorage.getItem('token');
