@@ -47,12 +47,14 @@ services:
       context: ./product-service
     container_name: product-service
     ports:
-     - "8085:8080"
+     - "8085:8085"
     volumes:
      - ./product-service:/app
      - ~/.m2:/root/.m2
     depends_on:
      - service-discovery
+    environment:
+     - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-discovery:8080/eureka/
     networks:
      - app-network
 
@@ -61,12 +63,14 @@ services:
       context: ./order-service
     container_name: order-service
     ports:
-     - "8086:8080"
+     - "8086:8086"
     volumes:
      - ./order-service:/app
      - ~/.m2:/root/.m2
     depends_on:
      - service-discovery
+    environment:
+     - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-discovery:8080/eureka/
     networks:
      - app-network
 
@@ -75,12 +79,14 @@ services:
       context: ./cart-service
     container_name: cart-service
     ports:
-     - "8087:8080"
+     - "8087:8087"
     volumes:
      - ./cart-service:/app
      - ~/.m2:/root/.m2
     depends_on:
      - service-discovery
+    environment:
+     - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-discovery:8080/eureka/
     networks:
      - app-network
 
