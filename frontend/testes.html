@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testes dos Microserviços - E-Commerce</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .auth-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .auth-section h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .token-display {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            border: 2px solid #667eea;
+            margin-top: 1rem;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .service-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .service-card h2 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        .test-button {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .test-button:hover {
+            background: #5568d3;
+            transform: translateX(5px);
+        }
+
+        .test-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .test-button .icon {
+            font-size: 1.2rem;
+        }
+
+        .result-box {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 1rem;
+            margin-top: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .result-box.show {
+            display: block;
+        }
+
+        .result-box pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .success {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .error {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .loading {
+            border-color: #ffc107;
+            background: #fff3cd;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-error {
+            background: #dc3545;
+            color: white;
+        }
+
+        .status-loading {
+            background: #ffc107;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 0.5rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .clear-btn {
+            background: #dc3545;
+            padding: 0.5rem 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .clear-btn:hover {
+            background: #c82333;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border: 2px solid #2196F3;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .info-box strong {
+            color: #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧪 Testes dos Microserviços</h1>
+            <p class="subtitle">Sistema E-Commerce - Arquitetura de Microserviços</p>
+        </header>
+
+        <!-- Seção de Autenticação -->
+        <div class="auth-section">
+            <h2>🔐 Autenticação</h2>
+            <div class="info-box">
+                <strong>Instruções:</strong> Primeiro registre um usuário e faça login para obter o token JWT necessário para os outros testes.
+            </div>
+            
+            <input type="text" id="userName" placeholder="Nome (para registro)">
+            <input type="email" id="userEmail" placeholder="Email">
+            <input type="password" id="userPassword" placeholder="Senha (mínimo 8 caracteres)">
+            
+            <div class="auth-buttons">
+                <button class="test-button" onclick="registerUser()">
+                    <span class="icon">📝</span> Registrar Usuário
+                </button>
+                <button class="test-button" onclick="loginUser()">
+                    <span class="icon">🔑</span> Fazer Login
+                </button>
+            </div>
+
+            <div id="authResult" class="result-box"></div>
+            
+            <div id="tokenDisplay" style="display: none;">
+                <strong>Token JWT:</strong>
+                <div class="token-display" id="tokenValue"></div>
+            </div>
+        </div>
+
+        <!-- Grid de Serviços -->
+        <div class="services-grid">
+            <!-- Auth Service -->
+            <div class="service-card">
+                <h2>👥 Auth Service</h2>
+                <button class="test-button" onclick="listUsers()">
+                    <span class="icon">📋</span> Listar Todos os Usuários
+                </button>
+                <button class="test-button" onclick="getUserById()">
+                    <span class="icon">🔍</span> Buscar Usuário por ID
+                </button>
+                <div id="authServiceResult" class="result-box"></div>
+            </div>
+
+            <!-- Product Service -->
+            <div class="service-card">
+                <h2>🚗 Product Service (Pneus)</h2>
+                <button class="test-button" onclick="listTires()">
+                    <span class="icon">📋</span> Listar Todos os Pneus
+                </button>
+                <button class="test-button" onclick="getTireById()">
+                    <span class="icon">🔍</span> Buscar Pneu por ID (1)
+                </button>
+                <button class="test-button" onclick="getTiresByBrand()">
+                    <span class="icon">🏷️</span> Buscar por Marca (Michelin)
+                </button>
+                <button class="test-button" onclick="getTiresBySeason()">
+                    <span class="icon">☀️</span> Buscar por Temporada (SUMMER)
+                </button>
+                <div id="productServiceResult" class="result-box"></div>
+            </div>
+
+            <!-- Cart Service -->
+            <div class="service-card">
+                <h2>🛒 Cart Service</h2>
+                <input type="number" id="cartUserId" placeholder="User ID (ex: 1)" value="1">
+                <button class="test-button" onclick="getCart()">
+                    <span class="icon">👁️</span> Ver Carrinho
+                </button>
+                <button class="test-button" onclick="addToCart()">
+                    <span class="icon">➕</span> Adicionar Item (Pneu ID: 1, Qtd: 2)
+                </button>
+                <button class="test-button" onclick="clearCart()">
+                    <span class="icon">🗑️</span> Limpar Carrinho
+                </button>
+                <div id="cartServiceResult" class="result-box"></div>
+            </div>
+
+            <!-- Order Service -->
+            <div class="service-card">
+                <h2>📦 Order Service</h2>
+                <button class="test-button" onclick="listOrders()">
+                    <span class="icon">📋</span> Listar Todos os Pedidos
+                </button>
+                <button class="test-button" onclick="getOrderById()">
+                    <span class="icon">🔍</span> Buscar Pedido por ID (1)
+                </button>
+                <button class="test-button" onclick="getOrdersByStatus()">
+                    <span class="icon">⏳</span> Buscar por Status (PENDING)
+                </button>
+                <button class="test-button" onclick="createOrder()">
+                    <span class="icon">✨</span> Criar Novo Pedido
+                </button>
+                <div id="orderServiceResult" class="result-box"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8083';
+        let token = '';
+
+        function showResult(elementId, status, data) {
+            const element = document.getElementById(elementId);
+            element.className = `result-box show ${status}`;
+            
+            let badge = '';
+            if (status === 'success') badge = '<span class="status-badge status-success">✓ SUCESSO</span>';
+            else if (status === 'error') badge = '<span class="status-badge status-error">✗ ERRO</span>';
+            else if (status === 'loading') badge = '<span class="status-badge status-loading">⏳ CARREGANDO...</span>';
+            
+            element.innerHTML = badge + '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        }
+
+        async function registerUser() {
+            const name = document.getElementById('userName').value;
+            const email = document.getElementById('userEmail').value;
+            const password = document.getElementById('userPassword').value;
+
+            if (!name || !email || !password) {
+                showResult('authResult', 'error', { error: 'Preencha todos os campos!' });
+                return;
+            }
+
+            showResult('authResult', 'loading', { message: 'Registrando usuário...' });
+
+            try {
+                const response = await fetch(`${API_BASE}/auth-service/users`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('authResult', 'success', data);
+                } else {
+                    showResult('authResult', 'error', data);
+                }
+            } catch (error) {
+                showResult('authResult', 'error', { error: error.message });
+            }
+        }
+
+        async function loginUser() {
+            const email = document.getElementById('userEmail').value;
+            const password = document.getElementById('userPassword').value;
+
+            if (!email || !password) {
+                showResult('authResult', 'error', { error: 'Preencha email e senha!' });
+                return;
+            }
+
+            showResult('authResult', 'loading', { message: 'Fazendo login...' });
+
+            try {
+                const response = await fetch(`${API_BASE}/auth-service/auth/login/password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    token = data.accessToken;
+                    document.getElementById('tokenDisplay').style.display = 'block';
+                    document.getElementById('tokenValue').textContent = token;
+                    showResult('authResult', 'success', data);
+                } else {
+                    showResult('authResult', 'error', data);
+                }
+            } catch (error) {
+                showResult('authResult', 'error', { error: error.message });
+            }
+        }
+
+        async function listUsers() {
+            if (!token) {
+                showResult('authServiceResult', 'error', { error: 'Faça login primeiro!' });
+                return;
+            }
+
+            showResult('authServiceResult', 'loading', { message: 'Carregando usuários...' });
+
+            try {
+                const response = await fetch(`${API_BASE}/auth-service/users`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                showResult('authServiceResult', response.ok ? 'success' : 'error', data);
+            } catch (error) {
+                showResult('authServiceResult', 'error', { error: error.message });
+            }
+        }
+
+        async function getUserById() {
+            if (!token) {
+                showResult('authServiceResult', 'error', { error: 'Faça login primeiro!' });
+                return;
+            }
+
+            const userId = prompt('Digite o ID do usuário:');
+            if (!userId) return;
+
+            showResult('authServiceResult', 'loading', { message: 'Buscando usuário...' });
+
+            try {
+                const response = await fetch(`${API_BASE}/auth-service/users/${userId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                showResult('authServiceResult', response.ok ? 'success' : 'error', data);
+            } catch (error) {
+                showResult('authServiceResult', 'error', { error: error.message });
+            }
+        }
+
+        async function listTires() {
+            if (!token) {
+                showResult('productServiceResult', 'error', { error: 'Faça login primeiro!' });
+                return;
+            }
+
+            showResult('productServiceResult', 'loading', { message: 'Carregando pneus...' });
+
+            try {
+                const response = await fetch(`${API_BASE}/product-service/api/tires`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                showResult('productServiceResult', response.ok ? 'success' : 'error', data);
+            } catch (error) {
+                showResult('productServiceResult', 'error', { error: error.message });
+            }
+        }
+
+        async function getTireById() {
+            if (!token) {
+                showResult('productServiceResult', 'error', { error: 'Faça login primeiro!' });
+                return;
+            }
+
+            showResult('productServiceResult', 'loading', { message: 'Buscando pneu...' });
+
+            try {
+                const response = await fetch(`${API_BASE}/product-service/api/tires/1`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                showResult('productServiceResult', response.ok ? 'success' : 'error', data);
+            } catch (error) {
+                showResult('productServiceResult', 'error', { error: error.message });
+            }
+        }
+
+        async function getTiresByBrand() {
+            if (!token) {
+                showResult('productServiceResult', 'error', { error: 'Faça login primeiro!' });
+                return;
+            }
+
+            showResult('productServiceResult', 'loading', { message: 'Buscando pneus Michelin...' });
+
+            try {
+                const response = await fetch(`${API_BASE}/product-service/api/tires/brand/Michelin`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                showResult('productServiceResult', response.ok ? 'success' : 'error', data);
+            } catch (error) {
+                showResult('productServiceResult', 'error', { error: error.message });
+            }
+        }
+
+        async function getTiresBySeason() {
+            if (!token) {
+                showResult('productServiceResult', 'error', { error: 'Faça login primeiro!' });
+                return;
+            }
+
+            showResult('productServiceResult', 'loading', { message: 'Buscando pneus de verão...' });
+
+            try {
+                const response = await fetch(`${API_BASE}/product-service/api/tires/season/SUMMER`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                showResult('productServiceResult', response.ok ? 'success' : 'error', data);
+            } catch (error) {
+                showResult('productServiceResult', 'error', { error: error.message });
+            }
+        }
+
+        async function getCart() {
+            if (!token) {
+                showResult('cartServiceResult', 'error', { error: 'Faça login primeiro!' });
+                return;
+            }
+
+            const userId = document.getElementById('cartUserId').value;
+            showResult('cartServiceResult', 'loading', { message: 'Carregando carrinho...' });
+
+            try {
+                const response = await fetch(`${API_BASE}/cart-service/api/cart/${userId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                showResult('cartServiceResult', response.ok ? 'success' : 'error', data);
+            } catch (error) {
+                showResult('cartServiceResult', 'error', { error: error.message });
+            }
+        }
+
+        async function addToCart() {
+            if (!token) {
+                showResult('cartServiceResult', 'error', { error: 'Faça login primeiro!' });
+                return;
+            }
+
+            const userId = document.getElementById('cartUserId').value;
+            showResult('cartServiceResult', 'loading', { message: 'Adicionando ao carrinho...' });
+
+            try {
+                const response = await fetch(`${API_BASE}/cart-service/api/cart/${userId}/items`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ tireId: 1, quantity: 2 })
+                });
+
+                const data = await response.json();
+                showResult('cartServiceResult', response.ok ? 'success' : 'error', data);
+            } catch (error) {
+                showResult('cartServiceResult', 'error', { error: error.message });
+            }
+        }
+
+        async function clearCart() {
+            if (!token) {
+                showResult('cartServiceResult', 'error', { error: 'Faça login primeiro!' });
+                return;
+            }
+
+            const userId = document.getElementById('cartUserId').value;
+            showResult('cartServiceResult', 'loading', { message: 'Limpando carrinho...' });
+
+            try {
+                const response = await fetch(`${API_BASE}/cart-service/api/cart/${userId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    showResult('cartServiceResult', 'success', { message: 'Carrinho limpo com sucesso!' });
+                } else {
+                    const data = await response.json();
+                    showResult('cartServiceResult', 'error', data);
+                }
+            } catch (error) {
+                showResult('cartServiceResult', 'error', { error: error.message });
+            }
+        }
+
+        async function listOrders() {
+            if (!token) {
+                showResult('orderServiceResult', 'error', { error: 'Faça login primeiro!' });
+                return;
+            }
+
+            showResult('orderServiceResult', 'loading', { message: 'Carregando pedidos...' });
+
+            try {
+                const response = await fetch(`${API_BASE}/order-service/api/orders`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                showResult('orderServiceResult', response.ok ? 'success' : 'error', data);
+            } catch (error) {
+                showResult('orderServiceResult', 'error', { error: error.message });
+            }
+        }
+
+        async function getOrderById() {
+            if (!token) {
+                showResult('orderServiceResult', 'error', { error: 'Faça login primeiro!' });
+                return;
+            }
+
+            showResult('orderServiceResult', 'loading', { message: 'Buscando pedido...' });
+
+            try {
+                const response = await fetch(`${API_BASE}/order-service/api/orders/1`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                showResult('orderServiceResult', response.ok ? 'success' : 'error', data);
+            } catch (error) {
+                showResult('orderServiceResult', 'error', { error: error.message });
+            }
+        }
+
+        async function getOrdersByStatus() {
+            if (!token) {
+                showResult('orderServiceResult', 'error', { error: 'Faça login primeiro!' });
+                return;
+            }
+
+            showResult('orderServiceResult', 'loading', { message: 'Buscando pedidos pendentes...' });
+
+            try {
+                const response = await fetch(`${API_BASE}/order-service/api/orders/status/PENDING`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                showResult('orderServiceResult', response.ok ? 'success' : 'error', data);
+            } catch (error) {
+                showResult('orderServiceResult', 'error', { error: error.message });
+            }
+        }
+
+        async function createOrder() {
+            if (!token) {
+                showResult('orderServiceResult', 'error', { error: 'Faça login primeiro!' });
+                return;
+            }
+
+            showResult('orderServiceResult', 'loading', { message: 'Criando pedido...' });
+
+            try {
+                const response = await fetch(`${API_BASE}/order-service/api/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: 1,
+                        items: [
+                            { tireId: 1, quantity: 2, price: 450.00 }
+                        ],
+                        totalAmount: 900.00
+                    })
+                });
+
+                const data = await response.json();
+                showResult('orderServiceResult', response.ok ? 'success' : 'error', data);
+            } catch (error) {
+                showResult('orderServiceResult', 'error', { error: error.message });
+            }
+        }
+    </script>
+</body>
+</html>

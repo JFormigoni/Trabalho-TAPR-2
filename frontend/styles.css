@@ -73,16 +73,45 @@ button {
     border-radius: 5px;
     font-size: 1rem;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: all 0.3s;
+    font-weight: 500;
 }
 
 button:hover {
     background: #5568d3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+button:disabled:hover {
+    background: #ccc;
+    transform: none;
+    box-shadow: none;
 }
 
 #logout-btn {
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
+}
+
+#products-section, #cart-section, #orders-section {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+#products-section h2, #cart-section h2, #orders-section h2 {
+    color: #667eea;
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
 }
 
 .products-grid {
@@ -125,20 +154,34 @@ button:hover {
 }
 
 .cart-item {
-    background: white;
+    background: #f8f9fa;
     padding: 1rem;
     border-radius: 8px;
     margin-bottom: 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border: 1px solid #e0e0e0;
+}
+
+.cart-item:hover {
+    background: #e9ecef;
+    border-color: #667eea;
 }
 
 .order-card {
-    background: white;
-    padding: 1rem;
+    background: #f8f9fa;
+    padding: 1.5rem;
     border-radius: 8px;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.order-card:hover {
+    background: #e9ecef;
+    border-color: #667eea;
+    transform: translateX(5px);
 }
 
 .message {
@@ -178,6 +221,14 @@ button:hover {
 
 .btn-primary:hover {
     background: #218838;
+}
+
+.cart-item button[style*="background: #dc3545"] {
+    background: #dc3545 !important;
+}
+
+.cart-item button[style*="background: #dc3545"]:hover {
+    background: #c82333 !important;
 }
 
 a {

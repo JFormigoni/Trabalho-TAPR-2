@@ -149,35 +149,52 @@ function showMainApp() {
 
 async function loadProducts() {
     try {
-        const response = await fetch(`${API_BASE}/products`, {
+        const response = await fetch(`${API_BASE}/product-service/products`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         
+        console.log('Carregando produtos, status:', response.status);
+        
         if (response.ok) {
             const products = await response.json();
+            console.log('Produtos carregados:', products);
             displayProducts(products);
+        } else {
+            console.error('Erro ao carregar produtos:', response.status);
+            showMessage('Erro ao carregar produtos', 'error');
         }
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);
+        showMessage('Erro ao conectar com o serviço de produtos', 'error');
     }
 }
 
 function displayProducts(products) {
     const grid = document.getElementById('products-grid');
+    
+    if (!products || products.length === 0) {
+        grid.innerHTML = '<p style="color: white; text-align: center;">Nenhum produto disponível</p>';
+        return;
+    }
+    
     grid.innerHTML = products.map(product => `
         <div class="product-card">
             <h3>${product.name}</h3>
-            <p>${product.description}</p>
-            <div class="product-price">R$ ${product.price.toFixed(2)}</div>
-            <p>Estoque: ${product.stock}</p>
-            <button onclick="addToCart(${product.id})">Adicionar ao Carrinho</button>
+            <p>${product.description || 'Sem descrição'}</p>
+            <div class="product-price">R$ ${(product.price || 0).toFixed(2)}</div>
+            <p>Estoque: ${product.stock || 0}</p>
+            <button onclick="addToCart(${product.id})" ${product.stock <= 0 ? 'disabled' : ''}>
+                ${product.stock > 0 ? 'Adicionar ao Carrinho' : 'Sem Estoque'}
+            </button>
         </div>
     `).join('');
 }
 
 async function addToCart(productId) {
     try {
-        await fetch(`${API_BASE}/cart/items`, {
+        console.log('Adicionando produto ao carrinho:', productId);
+        
+        const response = await fetch(`${API_BASE}/cart-service/cart/items`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -185,25 +202,42 @@ async function addToCart(productId) {
             },
             body: JSON.stringify({ productId, quantity: 1 })
         });
-        showMessage('Adicionado!', 'success');
-        loadCart();
+        
+        console.log('Resposta adicionar ao carrinho:', response.status);
+        
+        if (response.ok) {
+            showMessage('Produto adicionado ao carrinho!', 'success');
+            loadCart();
+        } else {
+            const errorText = await response.text();
+            console.error('Erro ao adicionar:', errorText);
+            showMessage('Erro ao adicionar ao carrinho', 'error');
+        }
     } catch (error) {
-        showMessage('Erro', 'error');
+        console.error('Erro:', error);
+        showMessage('Erro ao conectar com o serviço de carrinho', 'error');
     }
 }
 
 async function loadCart() {
     try {
-        const response = await fetch(`${API_BASE}/cart`, {
+        const response = await fetch(`${API_BASE}/cart-service/cart`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         
+        console.log('Carregando carrinho, status:', response.status);
+        
         if (response.ok) {
             const cart = await response.json();
+            console.log('Carrinho carregado:', cart);
             displayCart(cart);
+        } else {
+            console.error('Erro ao carregar carrinho:', response.status);
+            displayCart({ items: [] });
         }
     } catch (error) {
         console.error('Erro ao carregar carrinho:', error);
+        displayCart({ items: [] });
     }
 }
 
@@ -211,7 +245,7 @@ function displayCart(cart) {
     const cartItems = document.getElementById('cart-items');
     const checkoutBtn = document.getElementById('checkout-btn');
     
-    if (!cart.items || cart.items.length === 0) {
+    if (!cart || !cart.items || cart.items.length === 0) {
         cartItems.innerHTML = '<p>Carrinho vazio</p>';
         checkoutBtn.style.display = 'none';
         return;
@@ -219,53 +253,136 @@ function displayCart(cart) {
     
     checkoutBtn.style.display = 'block';
     
+    const total = cart.totalAmount || cart.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+    
     cartItems.innerHTML = cart.items.map(item => `
         <div class="cart-item">
             <div>
-                <strong>${item.productName}</strong><br>
-                ${item.quantity}x R$ ${item.price.toFixed(2)} = R$ ${(item.quantity * item.price).toFixed(2)}
+                <strong>${item.productName || 'Produto'}</strong><br>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                    <button onclick="updateQuantity(${item.id}, ${item.quantity - 1})" style="padding: 0.25rem 0.5rem; font-size: 0.9rem;" ${item.quantity <= 1 ? 'disabled' : ''}>-</button>
+                    <span style="font-weight: bold;">${item.quantity}</span>
+                    <button onclick="updateQuantity(${item.id}, ${item.quantity + 1})" style="padding: 0.25rem 0.5rem; font-size: 0.9rem;">+</button>
+                    <span style="margin-left: 0.5rem;">x R$ ${(item.price || 0).toFixed(2)} = R$ ${((item.quantity * item.price) || 0).toFixed(2)}</span>
+                </div>
             </div>
-            <button onclick="removeFromCart(${item.id})">Remover</button>
+            <button onclick="removeFromCart(${item.id})" style="background: #dc3545;">Remover</button>
         </div>
-    `).join('') + `<p><strong>Total: R$ ${cart.totalAmount.toFixed(2)}</strong></p>`;
+    `).join('') + `<div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-top: 1rem; border: 2px solid #667eea;"><strong style="font-size: 1.2rem; color: #667eea;">Total: R$ ${total.toFixed(2)}</strong></div>`;
+}
+
+async function updateQuantity(itemId, newQuantity) {
+    if (newQuantity < 1) return;
+    
+    try {
+        console.log('Atualizando quantidade:', itemId, newQuantity);
+        
+        const response = await fetch(`${API_BASE}/cart-service/cart/items/${itemId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ quantity: newQuantity })
+        });
+        
+        if (response.ok) {
+            loadCart();
+        } else {
+            showMessage('Erro ao atualizar quantidade', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao atualizar quantidade:', error);
+        showMessage('Erro ao conectar com o serviço', 'error');
+    }
 }
 
 async function removeFromCart(itemId) {
-    await fetch(`${API_BASE}/cart/items/${itemId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
-    loadCart();
+    try {
+        console.log('Removendo item do carrinho:', itemId);
+        
+        const response = await fetch(`${API_BASE}/cart-service/cart/items/${itemId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            showMessage('Item removido do carrinho', 'success');
+            loadCart();
+        } else {
+            showMessage('Erro ao remover item', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao remover item:', error);
+        showMessage('Erro ao conectar com o serviço', 'error');
+    }
 }
 
 async function handleCheckout() {
-    const res = await fetch(`${API_BASE}/orders`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
-    
-    if (res.ok) {
-        showMessage('Pedido realizado!', 'success');
-        loadCart();
-        loadOrders();
+    try {
+        console.log('Finalizando pedido...');
+        
+        const response = await fetch(`${API_BASE}/order-service/orders`, {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        console.log('Resposta checkout:', response.status);
+        
+        if (response.ok) {
+            showMessage('Pedido realizado com sucesso!', 'success');
+            loadCart();
+            loadOrders();
+        } else {
+            const errorText = await response.text();
+            console.error('Erro no checkout:', errorText);
+            showMessage('Erro ao finalizar pedido', 'error');
+        }
+    } catch (error) {
+        console.error('Erro no checkout:', error);
+        showMessage('Erro ao conectar com o serviço de pedidos', 'error');
     }
 }
 
 async function loadOrders() {
-    const res = await fetch(`${API_BASE}/orders`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const orders = await res.json();
-    
+    try {
+        const response = await fetch(`${API_BASE}/order-service/orders`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        console.log('Carregando pedidos, status:', response.status);
+        
+        if (response.ok) {
+            const orders = await response.json();
+            console.log('Pedidos carregados:', orders);
+            displayOrders(orders);
+        } else {
+            console.error('Erro ao carregar pedidos:', response.status);
+            displayOrders([]);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar pedidos:', error);
+        displayOrders([]);
+    }
+}
+
+function displayOrders(orders) {
     const ordersList = document.getElementById('orders-list');
+    
     if (!orders || orders.length === 0) {
-        ordersList.innerHTML = '<p>Nenhum pedido</p>';
+        ordersList.innerHTML = '<p style="color: white;">Nenhum pedido realizado</p>';
         return;
     }
     
-    ordersList.innerHTML = orders.map(o => `
+    ordersList.innerHTML = orders.map(order => `
         <div class="order-card">
-            Pedido #${o.id} - ${o.status} - R$ ${o.totalAmount.toFixed(2)}
+            <strong>Pedido #${order.id}</strong><br>
+            Status: <span style="color: #667eea; font-weight: bold;">${order.status || 'PENDENTE'}</span><br>
+            Total: R$ ${(order.totalAmount || 0).toFixed(2)}<br>
+            <small>Data: ${order.createdAt ? new Date(order.createdAt).toLocaleString('pt-BR') : 'N/A'}</small>
         </div>
     `).join('');
 }
@@ -277,4 +394,14 @@ function showMessage(message, type) {
     setTimeout(() => {
         messageEl.className = 'message';
     }, 3000);
+}
+
+function demoMode() {
+    // Modo demo sem autenticação
+    token = 'demo-token';
+    currentUser = 'Demo User';
+    localStorage.setItem('token', token);
+    localStorage.setItem('username', currentUser);
+    showMessage('Modo Demo ativado!', 'success');
+    showMainApp();
 }
